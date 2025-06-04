@@ -1,9 +1,10 @@
 #include "philo.h"
+
 long	ft_atol(char *str)
 {
 	long	res = 0;
 	int		i = 0;
-    int     sign = 1;
+	int		sign = 1;
 
 	while (str[i] >= 9 && str[i] <= 13)
 		i++;
@@ -30,9 +31,9 @@ long	ft_atol(char *str)
 int	check_args(int argc, char **argv)
 {
 	int	val;
-    int i;
+	int	i;
 
-    i = 1;
+	i = 1;
 	if (argc != 5 && argc != 6)
 	{
 		printf("Error: Expected 4 or 5 arguments.\n");
@@ -46,20 +47,20 @@ int	check_args(int argc, char **argv)
 			printf("Error: All arguments must be positive integers.\n");
 			return (1);
 		}
-        i++;
+		i++;
 	}
 	return (0);
 }
+
 int	main(int argc, char **argv)
 {
-    t_data  data;
-	pthread_t monitor;
+	t_data		data;
+	pthread_t	monitor;
 
-	if (check_args(argc, argv)) 
-		return(1);
-	
-	if (init_data(argc, argv, &data)) 
-		return(1);
+	if (check_args(argc, argv))
+		return (1);
+	if (init_data(argc, argv, &data))
+		return (1);
 	if (pthread_create(&monitor, NULL, monitor_thread, &data) != 0)
 	{
 		printf("Monitor başlatılamadı\n");
