@@ -6,45 +6,11 @@
 /*   By: palaca <palaca@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/02 18:17:20 by palaca            #+#    #+#             */
-/*   Updated: 2025/08/02 18:53:47 by palaca           ###   ########.fr       */
+/*   Updated: 2025/08/02 20:28:53 by palaca           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-
-int	start_threads(t_data *data)
-{
-	int	i;
-
-	data->start_time = get_time_in_ms();
-	i = 0;
-	while (i < data->num_philo)
-	{
-		if (pthread_create(&data->philos[i].thread, NULL,
-				philosopher_lifecycle, &data->philos[i]) != 0)
-			return (1);
-		i++;
-	}
-	i = 0;
-	while (i < data->num_philo)
-	{
-		if (pthread_join(data->philos[i].thread, NULL) != 0)
-			return (1);
-		i++;
-	}
-	return (0);
-}
-
-void	try_to_live_alone(t_philo *philo)
-{
-	print_action(philo, "has taken a left fork");
-	usleep(philo->data->time_to_die * 1000);
-	print_action(philo, "died");
-	pthread_mutex_lock(&philo->data->death_mutex);
-	philo->data->someone_died = 1;
-	pthread_mutex_unlock(&philo->data->death_mutex);
-	return ;
-}
 
 void	*philosopher_lifecycle(void *arg)
 {
@@ -68,34 +34,6 @@ void	*philosopher_lifecycle(void *arg)
 	return (NULL);
 }
 
-void	perform_eating(t_philo *philo)
-{
-	long	eat_chunks;
-	long	remaining;
-	int		i;
-
-	// Critical section - meal time update
-	pthread_mutex_lock(&philo->meal_mutex);
-	philo->last_meal_time = get_time_in_ms();
-	pthread_mutex_unlock(&philo->meal_mutex);
-	
-	print_action(philo, "is eating");
-	
-	// Eating süresini bölerek kontrol et
-	eat_chunks = philo->data->time_to_eat / 50;
-	remaining = philo->data->time_to_eat % 50;
-	
-	i = 0;
-	while (i < eat_chunks && !is_simulation_over(philo->data))
-	{
-		smart_sleep(50, philo->data);
-		i++;
-	}
-	
-	if (!is_simulation_over(philo->data) && remaining > 0)
-		smart_sleep(remaining, philo->data);
-}
-
 void	eat(t_philo *philo)
 {
 	if (is_simulation_over(philo->data))
@@ -106,33 +44,27 @@ void	eat(t_philo *philo)
 		put_down_forks(philo);
 		return ;
 	}
-	
 	perform_eating(philo);
-	
 	if (is_simulation_over(philo->data))
 	{
 		put_down_forks(philo);
 		return ;
 	}
-	
 	pthread_mutex_lock(&philo->meal_mutex);
 	philo->meals_eaten++;
 	pthread_mutex_unlock(&philo->meal_mutex);
 	put_down_forks(philo);
 }
 
-
-
 void	sleep_and_think(t_philo *philo)
 {
 	if (is_simulation_over(philo->data))
-		return;
+		return ;
 	print_action(philo, "is sleeping");
 	smart_sleep(philo->data->time_to_sleep, philo->data);
 	if (is_simulation_over(philo->data))
-		return;
+		return ;
 	print_action(philo, "is thinking");
-	
 	// Thinking süresi - kritik iyileştirme
 	// Her filozof biraz düşünsün ki diğerleri şans bulsun
 	if (philo->data->num_philo % 2 != 0) // Tek sayıda filozof varsa
@@ -141,9 +73,9 @@ void	sleep_and_think(t_philo *philo)
 
 void	take_forks(t_philo *philo)
 {
+	pthread_mutex_t	*first_fork;
+	pthread_mutex_t	*second_fork;
 	// Fork order strategy - deadlock prevention ve fairness için
-	pthread_mutex_t *first_fork, *second_fork;
-	
 	// ID'ye göre fork sırası belirleme (daha etkili strateji)
 	if (philo->id % 2 == 1)
 	{
@@ -155,14 +87,11 @@ void	take_forks(t_philo *philo)
 		first_fork = philo->right_fork;
 		second_fork = philo->left_fork;
 	}
-	
 	pthread_mutex_lock(first_fork);
 	print_action(philo, "has taken first a fork");
-	
 	// Eğer tek çatal kaldıysa ve tek filozof varsa
 	if (philo->data->num_philo == 1)
-		return;
-		
+		return ;
 	pthread_mutex_lock(second_fork);
 	print_action(philo, "has taken a second fork");
 }

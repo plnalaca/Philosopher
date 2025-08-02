@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   monitoring.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: palaca <palaca@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/02 20:11:24 by palaca            #+#    #+#             */
+/*   Updated: 2025/08/02 20:15:55 by palaca           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
 void	loop(t_data *data, int *full_count, int i)
@@ -57,4 +69,15 @@ int	is_simulation_over(t_data *data)
 	result = (data->someone_died || data->all_ate);
 	pthread_mutex_unlock(&data->death_mutex);
 	return (result);
+}
+
+void	try_to_live_alone(t_philo *philo)
+{
+	print_action(philo, "has taken a left fork");
+	usleep(philo->data->time_to_die * 1000);
+	print_action(philo, "died");
+	pthread_mutex_lock(&philo->data->death_mutex);
+	philo->data->someone_died = 1;
+	pthread_mutex_unlock(&philo->data->death_mutex);
+	return ;
 }

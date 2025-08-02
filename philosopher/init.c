@@ -6,7 +6,7 @@
 /*   By: palaca <palaca@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/02 17:14:58 by palaca            #+#    #+#             */
-/*   Updated: 2025/08/02 17:14:58 by palaca           ###   ########.fr       */
+/*   Updated: 2025/08/02 20:16:53 by palaca           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,12 @@
 
 void	init_struct_vars(int argc, char **argv, t_data *data)
 {
-	data->num_philo = ft_atol(argv[1]);
-	data->time_to_die = ft_atol(argv[2]);
-	data->time_to_eat = ft_atol(argv[3]);
-	data->time_to_sleep = ft_atol(argv[4]);
+	data->num_philo = ft_atol(argv[1], 1);
+	data->time_to_die = ft_atol(argv[2], 1);
+	data->time_to_eat = ft_atol(argv[3], 1);
+	data->time_to_sleep = ft_atol(argv[4], 1);
 	if (argc == 6)
-		data->must_eat_count = ft_atol(argv[5]);
+		data->must_eat_count = ft_atol(argv[5], 1);
 	else
 		data->must_eat_count = -1;
 	data->someone_died = 0;
@@ -91,4 +91,28 @@ void	cleanup_data(t_data *data)
 		free(data->philos);
 		data->philos = NULL;
 	}
+}
+
+void	perform_eating(t_philo *philo)
+{
+	long	eat_chunks;
+	long	remaining;
+	int		i;
+	
+	i = 0;
+	// Critical section - meal time update
+	pthread_mutex_lock(&philo->meal_mutex);
+	philo->last_meal_time = get_time_in_ms();
+	pthread_mutex_unlock(&philo->meal_mutex);
+	print_action(philo, "is eating");
+	// Eating süresini bölerek kontrol et
+	eat_chunks = philo->data->time_to_eat / 50;
+	remaining = philo->data->time_to_eat % 50;
+	while (i < eat_chunks && !is_simulation_over(philo->data))
+	{
+		smart_sleep(50, philo->data);
+		i++;
+	}
+	if (!is_simulation_over(philo->data) && remaining > 0)
+		smart_sleep(remaining, philo->data);
 }

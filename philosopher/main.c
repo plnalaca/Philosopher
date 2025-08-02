@@ -1,11 +1,24 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: palaca <palaca@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/02 20:17:55 by palaca            #+#    #+#             */
+/*   Updated: 2025/08/02 20:29:12 by palaca           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
-long	ft_atol(char *str)
+long	ft_atol(char *str, int sign)
 {
-	long	res = 0;
-	int		i = 0;
-	int		sign = 1;
+	long	res;
+	int		i;
 
+	res = 0;
+	i = 0;
 	while (str[i] >= 9 && str[i] <= 13)
 		i++;
 	if (str[i] == '-' || str[i] == '+')
@@ -41,12 +54,35 @@ int	check_args(int argc, char **argv)
 	}
 	while (i < argc)
 	{
-		val = ft_atol(argv[i]);
+		val = ft_atol(argv[i], 1);
 		if (val <= 0)
 		{
 			printf("Error: All arguments must be positive integers.\n");
 			return (1);
 		}
+		i++;
+	}
+	return (0);
+}
+
+int	start_threads(t_data *data)
+{
+	int	i;
+
+	data->start_time = get_time_in_ms();
+	i = 0;
+	while (i < data->num_philo)
+	{
+		if (pthread_create(&data->philos[i].thread, NULL,
+				philosopher_lifecycle, &data->philos[i]) != 0)
+			return (1);
+		i++;
+	}
+	i = 0;
+	while (i < data->num_philo)
+	{
+		if (pthread_join(data->philos[i].thread, NULL) != 0)
+			return (1);
 		i++;
 	}
 	return (0);

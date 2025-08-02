@@ -6,7 +6,7 @@
 /*   By: palaca <palaca@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/08/02 18:07:05 by palaca            #+#    #+#             */
-/*   Updated: 2025/08/02 18:16:59 by palaca           ###   ########.fr       */
+/*   Updated: 2025/08/02 20:17:18 by palaca           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,8 +84,7 @@ void	smart_sleep(long duration_ms, t_data *data)
 	{
 		// Her 5ms'de simulation durumunu kontrol et
 		if (is_simulation_over(data))
-			return ;
-			
+			return ;	
 		// if (duration_ms - elapsed > 10)
 		// 	usleep(5000); // 5ms chunks
 		// else

@@ -1,9 +1,24 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <limits.h>
-#include <sys/time.h>
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: palaca <palaca@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/02 20:18:20 by palaca            #+#    #+#             */
+/*   Updated: 2025/08/02 20:24:36 by palaca           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#ifndef PHILO_H
+# define PHILO_H
+
+# include <stdlib.h>
+# include <stdio.h>
+# include <unistd.h>
+# include <pthread.h>
+# include <limits.h>
+# include <sys/time.h>
 
 typedef struct s_data
 {
@@ -20,11 +35,10 @@ typedef struct s_data
 	pthread_mutex_t	*forks;
 	pthread_mutex_t	print_mutex;
 
-	struct s_philo 	*philos;
+	struct s_philo	*philos;
 }	t_data;
 
-
-typedef struct	s_philo
+typedef struct s_philo
 {
 	int				id;
 	int				meals_eaten;
@@ -37,18 +51,18 @@ typedef struct	s_philo
 	pthread_mutex_t	*right_fork;
 
 	t_data			*data;
-}   t_philo;
+}	t_philo;
 
-int		init_data (int argc, char **argv, t_data *data);
+int		init_data(int argc, char **argv, t_data *data);
 int		check_args(int argc, char **argv);
 t_philo	*init_philosophers(t_data *data);
 void	cleanup_data(t_data *data);
 int		start_threads(t_data *data);
-long	ft_atol(char *str);
+long	ft_atol(char *str, int sign);
 long	get_time_in_ms(void);
 void	take_forks(t_philo *philo);
 void	*philosopher_lifecycle(void *arg);
-void		print_action(t_philo *philo, const char *msg);
+void	print_action(t_philo *philo, const char *msg);
 void	eat(t_philo *philo);
 void	sleep_and_think(t_philo *philo);
 void	put_down_forks(t_philo *philo);
@@ -59,3 +73,5 @@ int		is_simulation_over(t_data *data);
 void	print_died(t_philo *philo, const char *msg);
 int		all_eat(t_data *data, int full_count);
 void	perform_eating(t_philo *philo);
+
+#endif
