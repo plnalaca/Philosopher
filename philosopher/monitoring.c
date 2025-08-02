@@ -2,11 +2,11 @@
 
 void	loop(t_data *data, int *full_count, int i)
 {
-	pthread_mutex_lock(&data->philos->meal_mutex);
+	pthread_mutex_lock(&data->philos[i].meal_mutex);  // Doğru philosopher'ın mutex'ini kullan
 	if (data->must_eat_count != -1
 		&& data->philos[i].meals_eaten >= data->must_eat_count)
 		(*full_count)++;
-	pthread_mutex_unlock(&data->philos->meal_mutex);
+	pthread_mutex_unlock(&data->philos[i].meal_mutex);
 }
 
 void	*monitor_thread(void *arg)
@@ -32,7 +32,7 @@ void	*monitor_thread(void *arg)
 		}
 		if (all_eat(data, full_count))
 			return (NULL);
-		usleep(200);
+		usleep(100);  // Daha sık kontrol et (200'den 100'e düşür)
 	}
 	return (NULL);
 }
@@ -41,7 +41,9 @@ int	all_eat(t_data *data, int full_count)
 {
 	if (data->must_eat_count != -1 && full_count == data->num_philo)
 	{
+		pthread_mutex_lock(&data->death_mutex);
 		data->all_ate = 1;
+		pthread_mutex_unlock(&data->death_mutex);
 		return (1);
 	}
 	return (0);
