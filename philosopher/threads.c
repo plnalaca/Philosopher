@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   threads.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: palaca <palaca@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/08/02 18:17:20 by palaca            #+#    #+#             */
+/*   Updated: 2025/08/02 18:53:47 by palaca           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
 int	start_threads(t_data *data)
@@ -37,41 +49,32 @@ void	try_to_live_alone(t_philo *philo)
 void	*philosopher_lifecycle(void *arg)
 {
 	t_philo	*philo;
-	
+
 	philo = (t_philo *)arg;
 	if (philo->data->num_philo == 1)
 		return (try_to_live_alone(philo), NULL);
-	
 	// Staggered start - her filozof farklı zamanda başlasın
 	if (philo->id % 2 == 0)
 		smart_sleep(philo->data->time_to_eat / 2, philo->data);
-		
 	while (1)
 	{
 		if (is_simulation_over(philo->data))
-			break;
+			break ;
 		eat(philo);
 		if (is_simulation_over(philo->data))
-			break;
+			break ;
 		sleep_and_think(philo);
 	}
 	return (NULL);
 }
 
-void	eat(t_philo *philo)
+void	perform_eating(t_philo *philo)
 {
-	if (is_simulation_over(philo->data))
-		return;
-		
-	take_forks(philo);
-	
-	if (is_simulation_over(philo->data))
-	{
-		put_down_forks(philo);
-		return;
-	}
-	
-	// Critical section - meal time ve count update
+	long	eat_chunks;
+	long	remaining;
+	int		i;
+
+	// Critical section - meal time update
 	pthread_mutex_lock(&philo->meal_mutex);
 	philo->last_meal_time = get_time_in_ms();
 	pthread_mutex_unlock(&philo->meal_mutex);
@@ -79,27 +82,46 @@ void	eat(t_philo *philo)
 	print_action(philo, "is eating");
 	
 	// Eating süresini bölerek kontrol et
-	long eat_chunks = philo->data->time_to_eat / 50; // 50ms chunks
-	long remaining = philo->data->time_to_eat % 50;
+	eat_chunks = philo->data->time_to_eat / 50;
+	remaining = philo->data->time_to_eat % 50;
 	
-	for (int i = 0; i < eat_chunks && !is_simulation_over(philo->data); i++)
+	i = 0;
+	while (i < eat_chunks && !is_simulation_over(philo->data))
+	{
 		smart_sleep(50, philo->data);
+		i++;
+	}
 	
 	if (!is_simulation_over(philo->data) && remaining > 0)
 		smart_sleep(remaining, philo->data);
+}
+
+void	eat(t_philo *philo)
+{
+	if (is_simulation_over(philo->data))
+		return ;
+	take_forks(philo);
+	if (is_simulation_over(philo->data))
+	{
+		put_down_forks(philo);
+		return ;
+	}
+	
+	perform_eating(philo);
 	
 	if (is_simulation_over(philo->data))
 	{
 		put_down_forks(philo);
-		return;
+		return ;
 	}
 	
 	pthread_mutex_lock(&philo->meal_mutex);
 	philo->meals_eaten++;
 	pthread_mutex_unlock(&philo->meal_mutex);
-	
 	put_down_forks(philo);
 }
+
+
 
 void	sleep_and_think(t_philo *philo)
 {

@@ -58,3 +58,4 @@ void	*monitor_thread(void *arg);
 int		is_simulation_over(t_data *data);
 void	print_died(t_philo *philo, const char *msg);
 int		all_eat(t_data *data, int full_count);
+void	perform_eating(t_philo *philo);
